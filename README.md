@@ -1,219 +1,192 @@
-<div align="center">
+# Job Board REST API
 
-# 💼 Job Board REST API
+A production-style REST API for a job board platform, built with Spring Boot 3, PostgreSQL, JWT authentication, and a full CI/CD pipeline. Users can register, post and manage job listings, and browse or search jobs without authentication.
 
-**A production-style backend microservice for a job board platform**
-
-Built with Spring Boot · Secured with JWT · Tested · Dockerized · CI/CD on every push
-
-A backend REST API I built to practice production-level Java development.
-It handles user auth, job listings, and search — the kind of thing that
-powers any real hiring platform.
-
-[![CI/CD Pipeline](https://github.com/DeekshithaKalluri/jobboard-api/actions/workflows/ci.yml/badge.svg)](https://github.com/DeekshithaKalluri/jobboard-api/actions)
-![Java](https://img.shields.io/badge/Java-17-orange?logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-green?logo=springboot)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
-![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Tests](https://img.shields.io/badge/Tests-15%20passing-brightgreen)
-
-</div>
-
----
-
-## What Is This?
-
-This is the **backend API** of a job board platform — think the engine behind Indeed or LinkedIn Jobs.
-
-I built this to understand how real backend systems work end to end — from
-taking an HTTP request to storing data in a database and sending a response.
-It models a simplified job board: users sign up, post jobs, and search listings.
-
-A recruiter can sign up, log in, and post job listings. A job seeker can browse and search listings without needing an account. JWT tokens ensure only the person who posted a job can edit or delete it.
-
-A React or mobile frontend could plug into this API to build a complete, deployable product.
-
----
-
-## Features
-
-- **JWT Authentication** — stateless login with secure token generation and validation
-- **Job CRUD** — create, read, update, delete job listings with ownership enforcement
-- **Public search** — search by title or location without an account
-- **Input validation** — all request bodies validated with Jakarta Bean Validation
-- **15 automated tests** — unit tests with Mockito, integration tests with MockMvc
-- **Dockerized** — run the full stack (app + database) with one command
-- **CI/CD pipeline** — GitHub Actions runs tests and builds Docker image on every push
+![CI](https://github.com/DeekshithaKalluri/jobboard-api/actions/workflows/ci.yml/badge.svg)
+![Java](https://img.shields.io/badge/Java-17-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
+![Tests](https://img.shields.io/badge/tests-18%20passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
 ## Tech Stack
 
-| Category | Technology |
+| Layer | Technology |
 |---|---|
 | Language | Java 17 |
-| Framework | Spring Boot 3, Spring MVC |
-| Security | Spring Security 6, JWT (jjwt 0.12) |
-| Database | PostgreSQL 15, Hibernate, Spring Data JPA |
+| Framework | Spring Boot 3.5, Spring MVC, Spring Security 6 |
+| Auth | JWT via jjwt 0.12.6 |
+| Database | PostgreSQL 15 + Hibernate 6 + Spring Data JPA |
+| Migrations | Flyway |
+| Docs | SpringDoc OpenAPI / Swagger UI |
 | Testing | JUnit 5, Mockito, MockMvc |
-| DevOps | Docker, Docker Compose, GitHub Actions |
-| Build | Maven |
+| Containerization | Docker + Docker Compose |
+| CI/CD | GitHub Actions |
 
 ---
 
-## Project Structure
+## Features
 
-    src/main/java/com/jobboard/api/
-        controller/   → REST endpoints (AuthController, JobController)
-        service/      → Business logic (JobService)
-        repository/   → Database queries (UserRepository, JobRepository)
-        model/        → Database entities (User, Job)
-        security/     → JWT filter, SecurityConfig, UserDetailsService
-        dto/          → Request bodies (LoginRequest, RegisterRequest)
-
-    src/test/java/com/jobboard/api/
-        JobServiceTest.java                  → Unit tests with Mockito
-        AuthControllerIntegrationTest.java   → Integration tests with MockMvc
+- JWT-based registration and login
+- Post, edit, and delete job listings (authenticated, owner-only)
+- Browse all jobs with pagination and sorting
+- Combined search by title, location, and job type
+- Global exception handler returning consistent JSON error responses
+- Flyway schema migrations
+- Swagger UI at `/swagger-ui.html`
+- Dockerized with multi-stage build using `amazoncorretto:17-alpine` for ARM64/Apple Silicon support
+- GitHub Actions CI pipeline with PostgreSQL service container
 
 ---
 
-## API Reference
+## API Endpoints
 
-### Auth
-| Method | Endpoint | Auth Required | Description |
-|---|---|---|---|
-| POST | `/api/auth/register` | No | Register a new user |
-| POST | `/api/auth/login` | No | Login, returns JWT token |
+### Auth (public)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login and receive a JWT |
 
 ### Jobs
-| Method | Endpoint | Auth Required | Description |
+
+| Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/jobs` | No | Get all job listings |
-| GET | `/api/jobs/{id}` | No | Get one job by ID |
-| GET | `/api/jobs/search?title=X` | No | Search by job title |
-| GET | `/api/jobs/search?location=X` | No | Search by location |
-| POST | `/api/jobs` | Yes | Create a new listing |
-| PUT | `/api/jobs/{id}` | Yes | Update your listing |
-| DELETE | `/api/jobs/{id}` | Yes | Delete your listing |
+| GET | `/api/jobs` | No | List all jobs (paginated) |
+| GET | `/api/jobs/{id}` | No | Get a single job |
+| GET | `/api/jobs/search` | No | Search/filter jobs |
+| POST | `/api/jobs` | Yes | Create a job listing |
+| PUT | `/api/jobs/{id}` | Yes | Update your job listing |
+| DELETE | `/api/jobs/{id}` | Yes | Delete your job listing |
+
+**Pagination and sorting parameters** (`GET /api/jobs`):
+```
+?page=0&size=10&sortBy=createdAt&direction=desc
+```
+
+**Search parameters** (`GET /api/jobs/search`):
+```
+?title=engineer&location=remote&jobType=FULL_TIME&sortBy=salary&direction=asc
+```
 
 ---
 
-## Quickstart
+## Running Locally
 
-### Run with Docker (no setup needed)
+### Prerequisites
+
+- Java 17
+- Maven 3.9+
+- PostgreSQL 15
+
+### Database Setup
+
+```sql
+CREATE DATABASE jobboard;
+CREATE USER jobuser WITH PASSWORD 'jobpass123';
+GRANT ALL PRIVILEGES ON DATABASE jobboard TO jobuser;
+GRANT ALL ON SCHEMA public TO jobuser;
+ALTER DATABASE jobboard OWNER TO jobuser;
+```
+
+### Run
+
+```bash
+git clone https://github.com/DeekshithaKalluri/jobboard-api.git
+cd jobboard-api
+./mvnw spring-boot:run
+```
+
+API runs at `http://localhost:8080`. Swagger UI at `http://localhost:8080/swagger-ui.html`.
+
+---
+
+## Running with Docker
 
 ```bash
 docker-compose up
 ```
 
-App is live at `http://localhost:8080`. PostgreSQL is included — nothing else to install.
-
-### Run locally
-
-```bash
-# Requires PostgreSQL running on localhost:5432
-./mvnw spring-boot:run
-```
+This starts both the Spring Boot app and a PostgreSQL 15 container. No local database setup required.
 
 ---
 
-## Walkthrough
-
-### 1. Register
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"jane","email":"jane@example.com","password":"secret123"}'
-
-# {"message":"User registered successfully"}
-```
-
-### 2. Login
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"jane","password":"secret123"}'
-
-# {"token":"eyJ...","type":"Bearer","username":"jane"}
-```
-
-### 3. Post a Job
-```bash
-curl -X POST http://localhost:8080/api/jobs \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "title": "Software Engineer",
-    "company": "TechCorp",
-    "description": "Build amazing products",
-    "location": "Austin, TX",
-    "salary": 120000,
-    "jobType": "FULL_TIME"
-  }'
-```
-
-### 4. Search Jobs (no login needed)
-```bash
-curl "http://localhost:8080/api/jobs/search?title=engineer"
-curl "http://localhost:8080/api/jobs/search?location=Austin"
-```
-
----
-
-## Tests
+## Running Tests
 
 ```bash
 ./mvnw test
-# Tests run: 15, Failures: 0, Errors: 0
 ```
 
-**JobServiceTest** — unit tests for business logic using Mockito mocks (no database needed)
-
-**AuthControllerIntegrationTest** — full HTTP tests using MockMvc against a real test database
-
----
-
-## CI/CD Pipeline
-
-Every push to `main` triggers GitHub Actions to:
-
-1. Spin up a real PostgreSQL 15 container
-2. Run all 15 tests against it
-3. Build the Docker image — only if every test passes
+**18 tests, 0 failures:**
+- 8 unit tests (`JobServiceTest`) — Mockito, no Spring context
+- 9 integration tests (`AuthControllerIntegrationTest`) — MockMvc, full Spring context with test profile
+- 1 context load test (`ApiApplicationTests`)
 
 ---
 
-## What I Learned Building This
+## Project Structure
 
-**JWT is stateless by design.** The server never stores the token — it just
-validates the signature on each request. That's why it scales well.
-
-**Spring Security 6 changed a lot.** The old WebSecurityConfigurerAdapter is
-gone. I had to learn the new lambda-style SecurityFilterChain, which honestly
-makes more sense once you understand it.
-
-**Integration tests need a real database.** I tried H2 in-memory first but
-ran into dialect issues with PostgreSQL-specific constraints. Using the actual
-PostgreSQL instance with create-drop made the tests reliable.
-
-**Docker Compose made local dev much easier.** Instead of worrying about
-PostgreSQL being started, one command brings up the whole stack.
-
-**GitHub Actions runs on Linux.** My local machine is Apple Silicon (ARM),
-which broke the eclipse-temurin Docker image. Had to switch to amazoncorretto
-which has proper ARM64 support.
+```
+src/
+├── main/java/com/jobboard/api/
+│   ├── controller/       AuthController.java, JobController.java
+│   ├── service/          JobService.java
+│   ├── repository/       UserRepository.java, JobRepository.java
+│   ├── model/            User.java, Job.java
+│   ├── security/         JwtUtils.java, JwtAuthenticationFilter.java,
+│   │                     SecurityConfig.java, UserDetailsServiceImpl.java,
+│   │                     OpenApiConfig.java
+│   ├── exception/        GlobalExceptionHandler.java
+│   └── dto/              LoginRequest.java, RegisterRequest.java
+└── main/resources/
+    ├── application.properties
+    └── db/migration/V1__init.sql
+```
 
 ---
 
-## Challenges I Hit
+## Environment Variables
 
-- **jjwt version mismatch** — upgraded from 0.11.5 to 0.12.6 mid-build because
-  the API changed (`parserBuilder()` was removed). Had to update all three method
-  calls in JwtUtils.
-- **PostgreSQL permissions** — jobuser didn't have schema create rights by default
-  in PostgreSQL 15. Fixed with `GRANT ALL ON SCHEMA public TO jobuser`.
-- **Spring Security returning 403 vs 401** — unauthenticated requests were returning
-  403 Forbidden instead of 401 Unauthorized. Fixed by adding a custom
-  AuthenticationEntryPoint to the security config.
-- **Maven using wrong Java** — Maven defaulted to Java 26 even after installing
-  Java 17. Fixed by setting JAVA_HOME explicitly in .zshrc.
+Copy `.env.example` and fill in your values:
+
+```
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/jobboard
+SPRING_DATASOURCE_USERNAME=jobuser
+SPRING_DATASOURCE_PASSWORD=jobpass123
+JWT_SECRET=your-secret-key-must-be-at-least-32-characters-long
+JWT_EXPIRATION=86400000
+```
+
+---
+
+## CI/CD
+
+GitHub Actions runs on every push to `main`:
+
+1. Spins up a PostgreSQL 15 service container
+2. Runs all 18 tests with environment variables injected
+3. Builds a Docker image if tests pass
+
+---
+
+## Challenges and What I Learned
+
+**jjwt 0.12.6 API breaking change** — The `parserBuilder()` method was removed between 0.11.x and 0.12.x. Updated `JwtUtils` to use the new `Jwts.parser().verifyWith().build().parseSignedClaims()` chain after diagnosing the compilation error.
+
+**PostgreSQL schema permissions** — Creating a database user without granting schema ownership caused `permission denied for schema public` errors on startup. Fixed with `GRANT ALL ON SCHEMA public` and `ALTER DATABASE OWNER`.
+
+**Spring Security 403 vs 401** — Spring Security returns 403 by default for both missing and invalid credentials. Added a custom `AuthenticationEntryPoint` to return the semantically correct 401 on authentication failure.
+
+**Docker ARM64 (Apple Silicon)** — `eclipse-temurin:17-jdk-alpine` has no ARM64 manifest. Switched to `amazoncorretto:17-alpine` which has native ARM64 support, resolving the platform mismatch error.
+
+**Flyway on an existing schema** — Flyway refused to run because the database already had tables from earlier `ddl-auto=update` runs. Added `spring.flyway.baseline-on-migrate=true` to allow Flyway to take ownership of an existing schema cleanly.
+
+**Hibernate lazy loading serialization** — `GET /api/jobs` threw a `ByteBuddyInterceptor` serialization error when Jackson tried to serialize the lazily-loaded `User` proxy. Fixed by adding `@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})` to `User.java`.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE)
