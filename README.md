@@ -139,7 +139,7 @@ src/
 │   │                     SecurityConfig.java, UserDetailsServiceImpl.java,
 │   │                     OpenApiConfig.java
 │   ├── exception/        GlobalExceptionHandler.java
-│   └── dto/              LoginRequest.java, RegisterRequest.java
+│   └── dto/              LoginRequest.java, RegisterRequest.java, JobResponse.java
 └── main/resources/
     ├── application.properties
     └── db/migration/V1__init.sql
@@ -183,7 +183,11 @@ GitHub Actions runs on every push to `main`:
 
 **Flyway on an existing schema** — Flyway refused to run because the database already had tables from earlier `ddl-auto=update` runs. Added `spring.flyway.baseline-on-migrate=true` to allow Flyway to take ownership of an existing schema cleanly.
 
-**Hibernate lazy loading serialization** — `GET /api/jobs` threw a `ByteBuddyInterceptor` serialization error when Jackson tried to serialize the lazily-loaded `User` proxy. Fixed by adding `@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})` to `User.java`.
+**Hibernate lazy loading serialization** — `GET /api/jobs` threw a `ByteBuddyInterceptor` 
+serialization error when Jackson tried to serialize the lazily-loaded `User` proxy. Fixed 
+properly by introducing a `JobResponse` DTO that maps only safe fields (username string instead 
+of the full `User` entity), eliminating both the serialization issue and potential password 
+hash exposure.
 
 ---
 
