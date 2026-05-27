@@ -6,6 +6,10 @@
 
 Built with Spring Boot · Secured with JWT · Tested · Dockerized · CI/CD on every push
 
+A backend REST API I built to practice production-level Java development.
+It handles user auth, job listings, and search — the kind of thing that
+powers any real hiring platform.
+
 [![CI/CD Pipeline](https://github.com/DeekshithaKalluri/jobboard-api/actions/workflows/ci.yml/badge.svg)](https://github.com/DeekshithaKalluri/jobboard-api/actions)
 ![Java](https://img.shields.io/badge/Java-17-orange?logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-green?logo=springboot)
@@ -20,6 +24,10 @@ Built with Spring Boot · Secured with JWT · Tested · Dockerized · CI/CD on e
 ## What Is This?
 
 This is the **backend API** of a job board platform — think the engine behind Indeed or LinkedIn Jobs.
+
+I built this to understand how real backend systems work end to end — from
+taking an HTTP request to storing data in a database and sending a response.
+It models a simplified job board: users sign up, post jobs, and search listings.
 
 A recruiter can sign up, log in, and post job listings. A job seeker can browse and search listings without needing an account. JWT tokens ensure only the person who posted a job can edit or delete it.
 
@@ -175,12 +183,37 @@ Every push to `main` triggers GitHub Actions to:
 
 ---
 
-## Design Decisions
+## What I Learned Building This
 
-**Stateless JWT auth** — no server-side sessions means the API can scale horizontally across multiple instances without sticky sessions.
+**JWT is stateless by design.** The server never stores the token — it just
+validates the signature on each request. That's why it scales well.
 
-**Layered architecture** — Controller handles HTTP, Service handles business logic, Repository handles data. Each layer is independently testable.
+**Spring Security 6 changed a lot.** The old WebSecurityConfigurerAdapter is
+gone. I had to learn the new lambda-style SecurityFilterChain, which honestly
+makes more sense once you understand it.
 
-**Ownership enforcement** — the service layer checks that the authenticated user owns a job listing before allowing updates or deletes.
+**Integration tests need a real database.** I tried H2 in-memory first but
+ran into dialect issues with PostgreSQL-specific constraints. Using the actual
+PostgreSQL instance with create-drop made the tests reliable.
 
-**Multi-stage Docker build** — a separate build stage compiles the JAR so the final runtime image stays small and doesn't include build tools.
+**Docker Compose made local dev much easier.** Instead of worrying about
+PostgreSQL being started, one command brings up the whole stack.
+
+**GitHub Actions runs on Linux.** My local machine is Apple Silicon (ARM),
+which broke the eclipse-temurin Docker image. Had to switch to amazoncorretto
+which has proper ARM64 support.
+
+---
+
+## Challenges I Hit
+
+- **jjwt version mismatch** — upgraded from 0.11.5 to 0.12.6 mid-build because
+  the API changed (`parserBuilder()` was removed). Had to update all three method
+  calls in JwtUtils.
+- **PostgreSQL permissions** — jobuser didn't have schema create rights by default
+  in PostgreSQL 15. Fixed with `GRANT ALL ON SCHEMA public TO jobuser`.
+- **Spring Security returning 403 vs 401** — unauthenticated requests were returning
+  403 Forbidden instead of 401 Unauthorized. Fixed by adding a custom
+  AuthenticationEntryPoint to the security config.
+- **Maven using wrong Java** — Maven defaulted to Java 26 even after installing
+  Java 17. Fixed by setting JAVA_HOME explicitly in .zshrc.
