@@ -1,28 +1,57 @@
-# Job Board REST API
+<div align="center">
 
-A production-style RESTful microservice built with Spring Boot featuring JWT authentication, PostgreSQL, comprehensive testing, and automated CI/CD.
+# 💼 Job Board REST API
 
-![CI/CD](https://github.com/DeekshithaKalluri/jobboard-api/actions/workflows/ci.yml/badge.svg)
+**A production-style backend microservice for a job board platform**
 
-## What It Does
+Built with Spring Boot · Secured with JWT · Tested · Dockerized · CI/CD on every push
 
-This is the backend engine of a job board platform (think Indeed or LinkedIn Jobs). It handles:
+[![CI/CD Pipeline](https://github.com/DeekshithaKalluri/jobboard-api/actions/workflows/ci.yml/badge.svg)](https://github.com/DeekshithaKalluri/jobboard-api/actions)
+![Java](https://img.shields.io/badge/Java-17-orange?logo=java)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-green?logo=springboot)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
+![Tests](https://img.shields.io/badge/Tests-15%20passing-brightgreen)
 
-- User registration and login with secure JWT tokens
-- Posting, editing, and deleting job listings (only if you own them)
-- Browsing and searching jobs without needing to log in
-- Input validation and error handling on all endpoints
+</div>
 
-A React or mobile frontend could connect to this API to build a complete job board product.
+---
+
+## What Is This?
+
+This is the **backend API** of a job board platform — think the engine behind Indeed or LinkedIn Jobs.
+
+A recruiter can sign up, log in, and post job listings. A job seeker can browse and search listings without needing an account. JWT tokens ensure only the person who posted a job can edit or delete it.
+
+A React or mobile frontend could plug into this API to build a complete, deployable product.
+
+---
+
+## Features
+
+- **JWT Authentication** — stateless login with secure token generation and validation
+- **Job CRUD** — create, read, update, delete job listings with ownership enforcement
+- **Public search** — search by title or location without an account
+- **Input validation** — all request bodies validated with Jakarta Bean Validation
+- **15 automated tests** — unit tests with Mockito, integration tests with MockMvc
+- **Dockerized** — run the full stack (app + database) with one command
+- **CI/CD pipeline** — GitHub Actions runs tests and builds Docker image on every push
+
+---
 
 ## Tech Stack
 
-- **Java 17** + **Spring Boot 3** (Spring MVC, Spring Security 6)
-- **PostgreSQL 15** with Hibernate / Spring Data JPA
-- **JWT authentication** via jjwt 0.12
-- **JUnit 5** + Mockito + MockMvc (15 tests, 0 failures)
-- **Docker** + Docker Compose
-- **GitHub Actions** CI/CD pipeline
+| Category | Technology |
+|---|---|
+| Language | Java 17 |
+| Framework | Spring Boot 3, Spring MVC |
+| Security | Spring Security 6, JWT (jjwt 0.12) |
+| Database | PostgreSQL 15, Hibernate, Spring Data JPA |
+| Testing | JUnit 5, Mockito, MockMvc |
+| DevOps | Docker, Docker Compose, GitHub Actions |
+| Build | Maven |
+
+---
 
 ## Project Structure
 
@@ -38,83 +67,120 @@ A React or mobile frontend could connect to this API to build a complete job boa
         JobServiceTest.java                  → Unit tests with Mockito
         AuthControllerIntegrationTest.java   → Integration tests with MockMvc
 
-## API Endpoints
+---
 
-**Auth** (no login required)
+## API Reference
 
-    POST /api/auth/register   Register a new user
-    POST /api/auth/login      Login and get a JWT token
+### Auth
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | No | Register a new user |
+| POST | `/api/auth/login` | No | Login, returns JWT token |
 
-**Jobs** (GET endpoints are public, POST/PUT/DELETE require login)
+### Jobs
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| GET | `/api/jobs` | No | Get all job listings |
+| GET | `/api/jobs/{id}` | No | Get one job by ID |
+| GET | `/api/jobs/search?title=X` | No | Search by job title |
+| GET | `/api/jobs/search?location=X` | No | Search by location |
+| POST | `/api/jobs` | Yes | Create a new listing |
+| PUT | `/api/jobs/{id}` | Yes | Update your listing |
+| DELETE | `/api/jobs/{id}` | Yes | Delete your listing |
 
-    GET    /api/jobs                        Get all jobs
-    GET    /api/jobs/{id}                   Get one job
-    GET    /api/jobs/search?title=X         Search by title
-    GET    /api/jobs/search?location=X      Search by location
-    POST   /api/jobs                        Create a job listing
-    PUT    /api/jobs/{id}                   Update your listing
-    DELETE /api/jobs/{id}                   Delete your listing
+---
 
-## Running Locally
+## Quickstart
 
-**Option 1 — Docker (easiest, no setup needed)**
+### Run with Docker (no setup needed)
 
-    docker-compose up
+```bash
+docker-compose up
+```
 
-App runs at http://localhost:8080 with PostgreSQL included.
+App is live at `http://localhost:8080`. PostgreSQL is included — nothing else to install.
 
-**Option 2 — Run directly**
+### Run locally
 
-    brew services start postgresql@15
-    ./mvnw spring-boot:run
+```bash
+# Requires PostgreSQL running on localhost:5432
+./mvnw spring-boot:run
+```
 
-## Example Walkthrough
+---
 
-**1. Register**
+## Walkthrough
 
-    curl -X POST http://localhost:8080/api/auth/register \
-      -H "Content-Type: application/json" \
-      -d '{"username":"jane","email":"jane@example.com","password":"secret123"}'
+### 1. Register
+```bash
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"jane","email":"jane@example.com","password":"secret123"}'
 
-    Response: {"message": "User registered successfully"}
+# {"message":"User registered successfully"}
+```
 
-**2. Login and get token**
+### 2. Login
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"jane","password":"secret123"}'
 
-    curl -X POST http://localhost:8080/api/auth/login \
-      -H "Content-Type: application/json" \
-      -d '{"username":"jane","password":"secret123"}'
+# {"token":"eyJ...","type":"Bearer","username":"jane"}
+```
 
-    Response: {"token":"eyJ...","type":"Bearer","username":"jane"}
+### 3. Post a Job
+```bash
+curl -X POST http://localhost:8080/api/jobs \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "title": "Software Engineer",
+    "company": "TechCorp",
+    "description": "Build amazing products",
+    "location": "Austin, TX",
+    "salary": 120000,
+    "jobType": "FULL_TIME"
+  }'
+```
 
-**3. Post a job (use token from step 2)**
+### 4. Search Jobs (no login needed)
+```bash
+curl "http://localhost:8080/api/jobs/search?title=engineer"
+curl "http://localhost:8080/api/jobs/search?location=Austin"
+```
 
-    curl -X POST http://localhost:8080/api/jobs \
-      -H "Content-Type: application/json" \
-      -H "Authorization: Bearer YOUR_TOKEN" \
-      -d '{"title":"Software Engineer","company":"TechCorp",
-           "description":"Build products","location":"Austin TX",
-           "salary":120000,"jobType":"FULL_TIME"}'
+---
 
-**4. Search jobs (no login needed)**
+## Tests
 
-    curl "http://localhost:8080/api/jobs/search?title=engineer"
+```bash
+./mvnw test
+# Tests run: 15, Failures: 0, Errors: 0
+```
 
-## Running Tests
+**JobServiceTest** — unit tests for business logic using Mockito mocks (no database needed)
 
-    ./mvnw test
-    # Result: Tests run: 15, Failures: 0, Errors: 0
+**AuthControllerIntegrationTest** — full HTTP tests using MockMvc against a real test database
+
+---
 
 ## CI/CD Pipeline
 
-Every push to main automatically:
+Every push to `main` triggers GitHub Actions to:
 
-1. Spins up a real PostgreSQL container on GitHub's servers
-2. Runs all 15 tests against it
-3. Builds the Docker image only if all tests pass
+1. Spin up a real PostgreSQL 15 container
+2. Run all 15 tests against it
+3. Build the Docker image — only if every test passes
 
-## Why This Architecture
+---
 
-- **Stateless JWT auth** — no server sessions, scales to multiple instances
-- **Layered design** — Controller handles HTTP, Service handles logic, Repository handles data
-- **Ownership enforcement** — users can only edit or delete their own job listings
-- **Multi-stage Docker build** — compile stage is separate from runtime, keeping the image small
+## Design Decisions
+
+**Stateless JWT auth** — no server-side sessions means the API can scale horizontally across multiple instances without sticky sessions.
+
+**Layered architecture** — Controller handles HTTP, Service handles business logic, Repository handles data. Each layer is independently testable.
+
+**Ownership enforcement** — the service layer checks that the authenticated user owns a job listing before allowing updates or deletes.
+
+**Multi-stage Docker build** — a separate build stage compiles the JAR so the final runtime image stays small and doesn't include build tools.
