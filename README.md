@@ -1,6 +1,7 @@
-<p align="center">
-    # Job Board REST API
-    A production-style REST API for a job board platform, built with Spring Boot 3, PostgreSQL, JWT authentication, and a full CI/CD pipeline. Users can register, post and manage job listings, and browse or search jobs without authentication.
+<div align="center">
+    
+# Job Board REST API
+A production-style REST API for a job board platform, built with Spring Boot 3, PostgreSQL, JWT authentication, and a full CI/CD pipeline. Users can register, post and manage job listings, and browse or search jobs without authentication.
     
 ![CI](https://github.com/DeekshithaKalluri/jobboard-api/actions/workflows/ci.yml/badge.svg)
 ![Java](https://img.shields.io/badge/Java-17-blue)
@@ -9,7 +10,8 @@
 ![Tests](https://img.shields.io/badge/tests-18%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-</p>
+</div>
+
 ---
 
 ## Tech Stack
