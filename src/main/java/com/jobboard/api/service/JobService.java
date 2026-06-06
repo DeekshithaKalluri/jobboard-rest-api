@@ -5,16 +5,19 @@ import com.jobboard.api.model.Job;
 import com.jobboard.api.model.User;
 import com.jobboard.api.repository.JobRepository;
 import com.jobboard.api.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import java.util.stream.Collectors;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class JobService {
 
     @Autowired
@@ -87,5 +90,28 @@ public class JobService {
 
     public List<Job> searchByLocation(String location) {
         return jobRepository.findByLocationContainingIgnoreCase(location);
+    }
+    @Transactional(readOnly = true)
+    public List<JobResponse> getAllJobsForAi() {
+        return jobRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<JobResponse> searchJobsForMcp(
+            String keyword, String location, String jobType) {
+        return jobRepository.findAll().stream()
+                .filter(job -> keyword == null || keyword.isBlank() ||
+                        job.getTitle().toLowerCase()
+                                .contains(keyword.toLowerCase()))
+                .filter(job -> location == null || location.isBlank() ||
+                        job.getLocation().toLowerCase()
+                                .contains(location.toLowerCase()))
+                .filter(job -> jobType == null || jobType.isBlank() ||
+                        job.getJobType().toString()
+                                .equalsIgnoreCase(jobType))
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 }

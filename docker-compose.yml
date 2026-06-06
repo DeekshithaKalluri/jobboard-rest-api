@@ -29,6 +29,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: jobpass123
       JWT_SECRET: jobboard-super-secret-key-must-be-at-least-32-characters-long
       JWT_EXPIRATION: 86400000
+      SPRING_AI_OPENAI_API_KEY: ${GROQ_API_KEY}
+      SPRING_AI_OPENAI_BASE_URL: https://api.groq.com/openai
+      SPRING_AI_OPENAI_CHAT_MODEL: llama-3.1-8b-instant
     depends_on:
       postgres:
         condition: service_healthy

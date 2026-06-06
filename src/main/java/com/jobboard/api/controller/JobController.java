@@ -1,7 +1,10 @@
 package com.jobboard.api.controller;
 
 import com.jobboard.api.dto.JobResponse;
+import java.util.List;
+import com.jobboard.api.dto.MatchRequest;
 import com.jobboard.api.model.Job;
+import com.jobboard.api.service.AiMatchingService;
 import com.jobboard.api.service.JobService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,9 @@ public class JobController {
 
     @Autowired
     private JobService jobService;
+
+    @Autowired
+    private AiMatchingService aiMatchingService;
 
     @GetMapping
     public ResponseEntity<Page<JobResponse>> getAllJobs(
@@ -83,5 +89,12 @@ public class JobController {
             return ResponseEntity.ok(Map.of("message", "Job deleted successfully"));
         }
         return ResponseEntity.notFound().build();
+    }
+    @PostMapping("/ai-match")
+    public ResponseEntity<String> aiMatch(
+            @Valid @RequestBody MatchRequest request) {
+        List<JobResponse> jobs = jobService.getAllJobsForAi();
+        String result = aiMatchingService.matchJobs(request.resumeText(), jobs);
+        return ResponseEntity.ok(result);
     }
 }
