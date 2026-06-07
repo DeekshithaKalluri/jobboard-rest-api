@@ -93,8 +93,7 @@ public class JobController {
     @PostMapping("/ai-match")
     public ResponseEntity<String> aiMatch(
             @Valid @RequestBody MatchRequest request) {
-        List<JobResponse> jobs = jobService.getAllJobsForAi();
-        String result = aiMatchingService.matchJobs(request.resumeText(), jobs);
+        String result = aiMatchingService.matchJobs(request.resumeText());
         return ResponseEntity.ok(result);
     }
 }
