@@ -97,7 +97,7 @@ ALTER DATABASE jobboard OWNER TO jobuser;
 ### Run
 
 ```bash
-git clone https://github.com/DeekshithaKalluri/jobboard-api.git
+git clone https://github.com/DeekshithaKalluri/jobboard-rest-api.git
 cd jobboard-api
 ./mvnw spring-boot:run
 ```
@@ -191,6 +191,16 @@ serialization error when Jackson tried to serialize the lazily-loaded `User` pro
 properly by introducing a `JobResponse` DTO that maps only safe fields (username string instead 
 of the full `User` entity), eliminating both the serialization issue and potential password 
 hash exposure.
+
+---
+
+## 🔮 Future Improvements
+- Redis caching for search results
+- Rate limiting with Bucket4j
+- OAuth2 login (Google/GitHub)
+- Job expiration scheduler with Spring @Scheduled
+- Full-text search with PostgreSQL tsvector/tsquery
+- Email notifications on job application (Spring Mail + @Async)
 
 ---
 
